@@ -6,7 +6,8 @@
  *                  Athena PrintShell widget class
  *
  * 
-Copyright 2003 Roland Mainz <roland.mainz@informatik.med.uni-giessen.de>
+
+Copyright 2003-2004 Roland Mainz <roland.mainz@nrubsig.org>
 
 All Rights Reserved.
 
@@ -39,6 +40,7 @@ in this Software without prior written authorization from The Open Group.
 #include <X11/StringDefs.h>
 #include <Xm/Xm.h> 
 #include <Xm/Text.h>
+#include <X11/Xaw/XawInit.h>
 #include <X11/Xaw/Print.h>
 #include <X11/XprintUtil/xprintutil.h>
 
