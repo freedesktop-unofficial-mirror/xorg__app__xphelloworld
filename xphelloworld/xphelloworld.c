@@ -37,11 +37,9 @@ in this Software without prior written authorization from The Open Group.
 #define NULLSTR(x) (((x)!=NULL)?(x):(""))
 
 #define Log(x) { if(verbose) printf x; }
-#define Msg(x) { if(!quiet)  printf x; }
 
 const char *ProgramName;      /* program name (from argv[0]) */
 Bool        verbose = False;  /* verbose output what the program is doing */
-Bool        quiet   = False;  /* be quiet (no output except errors) */
 
 static 
 void usage( void )
@@ -56,36 +54,9 @@ void usage( void )
     fprintf (stderr, "\t\tplex=<plex>\n");
     fprintf (stderr, "\t\ttitle=<string>\n");
     fprintf (stderr, "-v\tverbose output\n");
-    fprintf (stderr, "-q\tbe quiet (no output except errors)\n");
     fprintf (stderr, "-text <string>\ttext to print (in ISO-8859-1)\n");
     fprintf (stderr, "\n");
     exit(EXIT_FAILURE);
-}
-
-static
-void PrintSpoolerCommandResults( Display *pdpy, XPContext pcontext )
-{
-    char *scr;
-
-    scr = XpGetOneAttribute(pdpy, pcontext, XPJobAttr, "xp-spooler-command-results");
-    if( scr )
-    {
-      if( strlen(scr) > 0 )
-      {
-        const char *msg = XpuCompoundTextToXmb(pdpy, scr);
-        if( msg )
-        {
-          Msg(("Spooler command returned '%s'.\n", msg));
-          XpuFreeXmbString(msg);
-        }
-        else
-        {
-          Msg(("Spooler command returned '%s' (unconverted).\n", scr));
-        }
-      }
-
-      XFree((void *)scr);
-    }
 }
 
 static
@@ -94,6 +65,7 @@ int do_hello_world( const char *printername, const char *printerargs, const char
     char            *printerfile = NULL;
     Window           pwin;
     XGCValues        gcvalues;
+    XEvent           ev;
     GC               pgc;
     unsigned short   dummy;
     XRectangle       winrect;
@@ -193,7 +165,7 @@ int do_hello_world( const char *printername, const char *printerargs, const char
       
     /* usual rendering stuff..... */
 
-    sprintf(fontname, "-*-*-*-*-*-*-*-180-%ld-%ld-*-*-iso8859-1", context->document_dpi_x, context->document_dpi_y);
+    sprintf(fontname, "-*-*-*-*-*-*-*-180-%ld-%ld-*-*-iso8859-1", context->document_dpi, context->document_dpi);
     font = XLoadQueryFont(context->pdpy, fontname);
     XSetFont(context->pdpy, pgc, font->fid);
     if (!hello_world_message)
@@ -215,14 +187,10 @@ int do_hello_world( const char *printername, const char *printerargs, const char
     }
 
     XpauWaitForPrintNotify(context, XPEndJobNotify);    
-
-    /* end of spooled job - get spooler command results and print them */
-    PrintSpoolerCommandResults(context->pdpy, context->pcontext);
-
+    
     XpauReleaseContext(context);
     return(EXIT_SUCCESS);
 }
-
 
 int main (int argc, char *argv[])
 {
@@ -269,12 +237,6 @@ int main (int argc, char *argv[])
       else if (!strncmp("-v", arg, len))
       {
         verbose = True;
-        quiet   = False;
-      }
-      else if (!strncmp("-q", arg, len))
-      {
-        verbose = False;
-        quiet   = True;
       }
       else
       {
