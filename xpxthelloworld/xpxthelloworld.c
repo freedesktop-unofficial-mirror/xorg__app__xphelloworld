@@ -275,7 +275,8 @@ int do_hello_world( int argc, char *argv[], const char *printername, const char 
     XtAppContext     app;
     Widget           toplevel,
                      hello;
-    long             dpi;
+    long             dpi_x = 0L,
+                     dpi_y = 0L;
     char             fontname[256]; /* BUG: is this really big enougth ? */
     XFontStruct     *labelFont;
     Cardinal         n;
@@ -302,7 +303,7 @@ int do_hello_world( int argc, char *argv[], const char *printername, const char 
       XpSetContext(pdpy, pcontext);
 
       /* Get default printer resolution */   
-      if( XpuGetResolution(pdpy, pcontext, &dpi) != 1 )
+      if( XpuGetResolution(pdpy, pcontext, &dpi_x, &dpi_y) != 1 )
       {
         fprintf(stderr, "No default resolution for printer '%s'\n", printername);
         XpuClosePrinterDisplay(pdpy, pcontext);
@@ -317,7 +318,7 @@ int do_hello_world( int argc, char *argv[], const char *printername, const char 
       if( !pdpy )
         Error(("XOpenDisplay failure.\n"));
 
-      dpi = 0;
+      dpi_x = dpi_y = 0L;
       
       pscreen = XDefaultScreenOfDisplay(pdpy);
     }  
@@ -331,7 +332,7 @@ int do_hello_world( int argc, char *argv[], const char *printername, const char 
     if( !toplevel )
       Error(("xt_xp_openapplication failure.\n"));
     
-    sprintf(fontname, "-*-*-*-*-*-*-*-180-%ld-%ld-*-*-iso8859-1", dpi, dpi);
+    sprintf(fontname, "-*-*-*-*-*-*-*-180-%ld-%ld-*-*-iso8859-1", dpi_x, dpi_y);
     labelFont = XLoadQueryFont(pdpy, fontname);
     if( !labelFont )
       Error(("XLoadQueryFont failure.\n"));

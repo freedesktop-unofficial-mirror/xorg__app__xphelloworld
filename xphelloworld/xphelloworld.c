@@ -165,7 +165,7 @@ int do_hello_world( const char *printername, const char *printerargs, const char
       
     /* usual rendering stuff..... */
 
-    sprintf(fontname, "-*-*-*-*-*-*-*-180-%ld-%ld-*-*-iso8859-1", context->document_dpi, context->document_dpi);
+    sprintf(fontname, "-*-*-*-*-*-*-*-180-%ld-%ld-*-*-iso8859-1", context->document_dpi_x, context->document_dpi_y);
     font = XLoadQueryFont(context->pdpy, fontname);
     XSetFont(context->pdpy, pgc, font->fid);
     if (!hello_world_message)

@@ -269,7 +269,8 @@ int do_hello_world( int argc, char *argv[], const char *printername, const char 
                          shell,                                                 
                          print_shell,                                           
                          hello;                                                 
-    long                 dpi;                                                   
+    long                 dpi_x = 0L,
+                         dpi_y = 0L;
     char                 fontname[256]; /* BUG: is this really big enougth ? */ 
     XFontStruct         *textFont;                                              
     XmFontList           textFontList;                                          
@@ -293,7 +294,7 @@ int do_hello_world( int argc, char *argv[], const char *printername, const char 
       XpSetContext(pdpy, pcontext);
 
       /* Get default printer resolution */   
-      if( XpuGetResolution(pdpy, pcontext, &dpi) != 1 )
+      if( XpuGetResolution(pdpy, pcontext, &dpi_x, &dpi_y) != 1 )
       {
         fprintf(stderr, "No default resolution for printer '%s'\n", printername);
         XpuClosePrinterDisplay(pdpy, pcontext);
@@ -308,7 +309,7 @@ int do_hello_world( int argc, char *argv[], const char *printername, const char 
       if( !pdpy )
         Error(("XOpenDisplay failure.\n"));
 
-      dpi = 0;
+      dpi_x = dpi_y = 0L;
       
       pscreen = XDefaultScreenOfDisplay(pdpy);
     }  
@@ -339,11 +340,11 @@ int do_hello_world( int argc, char *argv[], const char *printername, const char 
       shell = toplevel;
     }
 
-    sprintf(fontname, "-adobe-courier-medium-r-normal--40-*-%ld-%ld-*-*-iso8859-1", dpi, dpi);
+    sprintf(fontname, "-adobe-courier-medium-r-normal--40-*-%ld-%ld-*-*-iso8859-1", dpi_x, dpi_y);
     textFont = XLoadQueryFont(pdpy, fontname);
     if( !textFont )
     {          
-      sprintf(fontname, "-*-*-*-*-*-*-*-160-%ld-%ld-*-*-iso8859-1", dpi, dpi);
+      sprintf(fontname, "-*-*-*-*-*-*-*-160-%ld-%ld-*-*-iso8859-1", dpi_x, dpi_y);
       textFont = XLoadQueryFont(pdpy, fontname);
     }
     if( !textFont )

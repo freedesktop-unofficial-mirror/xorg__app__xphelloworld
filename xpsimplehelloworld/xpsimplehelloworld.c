@@ -87,7 +87,8 @@ int do_hello_world(const char *printername, const char *printerfile, const char 
     void          *printtofile_handle; /* "context" when printing to file */
     int            xp_event_base,      /* XpExtension even base */
                    xp_error_base;      /* XpExtension error base */
-    long           dpi;
+    long           dpi_x = 0L,
+                   dpi_y = 0L;
     Screen        *pscreen;
     int            pscreennumber;
     Window         pwin;
@@ -131,7 +132,7 @@ int do_hello_world(const char *printername, const char *printerfile, const char 
     XpSetContext(pdpy, pcontext);
 
     /* Get default printer reolution */   
-    if( XpuGetResolution(pdpy, pcontext, &dpi) != 1 )
+    if( XpuGetResolution(pdpy, pcontext, &dpi_x, &dpi_y) != 1 )
     {
       fprintf(stderr, "No default resolution for printer '%s'.\n", printername);
       XpuClosePrinterDisplay(pdpy, pcontext);
@@ -199,7 +200,7 @@ int do_hello_world(const char *printername, const char *printerfile, const char 
       
     /* usual rendering stuff..... */
 
-    sprintf(fontname, "-*-*-*-*-*-*-*-180-%ld-%ld-*-*-iso8859-1", dpi, dpi);
+    sprintf(fontname, "-*-*-*-*-*-*-*-180-%ld-%ld-*-*-iso8859-1", dpi_x, dpi_y);
     font = XLoadQueryFont(pdpy, fontname);
     XSetFont(pdpy, pgc, font->fid);
     XDrawString(pdpy, pwin, pgc, 100, 100, "hello world from X11 print system", 33);
