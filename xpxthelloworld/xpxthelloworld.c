@@ -41,10 +41,8 @@ in this Software without prior written authorization from The Open Group.
 
 #define Error(x) { printf x ; exit(EXIT_FAILURE); }
 #define Log(x) { if(verbose) printf x; }
-#define Msg(x) { if(!quiet)  printf x; }
 
-/* Local prototypes */
-static void PrintSpoolerCommandResults(Display *pdpy, XPContext pcontext);
+/* Prototypes */
 static void redisplayWidget(Widget widget);
 static void MyAppMainLoop(XtAppContext app, Widget printwidget);
 static int  do_hello_world( int argc, char *argv[], const char *printername, const char *toFile );
@@ -52,7 +50,6 @@ static int  do_hello_world( int argc, char *argv[], const char *printername, con
 /* Global vars */
 const char *ProgramName;                /* program name (from argv[0]) */
 Bool        verbose            = False; /* verbose output what the program is doing */
-Bool        quiet              = False; /* be quiet (no output except errors) */
 Bool        done               = False; /* Done with printing ? */
 Bool        doPrint            = False; /* Do we print on a printer ? */
 int         xp_eventbase,               /* XpExtension event base */
@@ -64,32 +61,6 @@ void       *printtofile_handle = NULL;  /* XprintUtil "context" when printing to
 Drawable    pdrawable          = None;  /* paper drawable */
 int         numpages           = 0;     /* pages being printed */
 
-
-static
-void PrintSpoolerCommandResults( Display *pdpy, XPContext pcontext )
-{
-    char *scr;
-
-    scr = XpGetOneAttribute(pdpy, pcontext, XPJobAttr, "xp-spooler-command-results");
-    if( scr )
-    {
-      if( strlen(scr) > 0 )
-      {
-        const char *msg = XpuCompoundTextToXmb(pdpy, scr);
-        if( msg )
-        {
-          Msg(("Spooler command returned '%s'.\n", msg));
-          XpuFreeXmbString(msg);
-        }
-        else
-        {
-          Msg(("Spooler command returned '%s' (unconverted).\n", scr));
-        }
-      }
-
-      XFree((void *)scr);
-    }
-}
 
 static
 void MyAppMainLoop(XtAppContext app, Widget printwidget)
@@ -188,7 +159,6 @@ void usage( void )
     fprintf (stderr, "-printer printernname\tprinter to use\n");
     fprintf (stderr, "-printfile file\tprint to file instead of printer\n");
     fprintf (stderr, "-v\tverbose output\n");
-    fprintf (stderr, "-q\tbe quiet (no output except errors)\n");
     fprintf (stderr, "\n");
     exit(EXIT_FAILURE);
 }
@@ -230,12 +200,6 @@ int main( int argc, char *argv[] )
       else if (!strncmp("-v", arg, len))
       {
         verbose = True;
-        quiet   = False;
-      }
-      else if (!strncmp("-q", arg, len))
-      {
-        verbose = False;
-        quiet   = True;
       }
       else
       {
@@ -311,8 +275,7 @@ int do_hello_world( int argc, char *argv[], const char *printername, const char 
     XtAppContext     app;
     Widget           toplevel,
                      hello;
-    long             dpi_x = 0L,
-                     dpi_y = 0L;
+    long             dpi;
     char             fontname[256]; /* BUG: is this really big enougth ? */
     XFontStruct     *labelFont;
     Cardinal         n;
@@ -339,7 +302,7 @@ int do_hello_world( int argc, char *argv[], const char *printername, const char 
       XpSetContext(pdpy, pcontext);
 
       /* Get default printer resolution */   
-      if( XpuGetResolution(pdpy, pcontext, &dpi_x, &dpi_y) != 1 )
+      if( XpuGetResolution(pdpy, pcontext, &dpi) != 1 )
       {
         fprintf(stderr, "No default resolution for printer '%s'\n", printername);
         XpuClosePrinterDisplay(pdpy, pcontext);
@@ -354,7 +317,7 @@ int do_hello_world( int argc, char *argv[], const char *printername, const char 
       if( !pdpy )
         Error(("XOpenDisplay failure.\n"));
 
-      dpi_x = dpi_y = 0L;
+      dpi = 0;
       
       pscreen = XDefaultScreenOfDisplay(pdpy);
     }  
@@ -368,7 +331,7 @@ int do_hello_world( int argc, char *argv[], const char *printername, const char 
     if( !toplevel )
       Error(("xt_xp_openapplication failure.\n"));
     
-    sprintf(fontname, "-*-*-*-*-*-*-*-180-%ld-%ld-*-*-iso8859-1", dpi_x, dpi_y);
+    sprintf(fontname, "-*-*-*-*-*-*-*-180-%ld-%ld-*-*-iso8859-1", dpi, dpi);
     labelFont = XLoadQueryFont(pdpy, fontname);
     if( !labelFont )
       Error(("XLoadQueryFont failure.\n"));
@@ -436,8 +399,6 @@ int do_hello_world( int argc, char *argv[], const char *printername, const char 
           fprintf(stderr, "%s: Error while printing to file.\n", ProgramName);
         }
       }
-      
-      PrintSpoolerCommandResults(pdpy, pcontext);
     
       /* We have to use XpDestroyContext() and XtCloseDisplay() instead
        * of XpuClosePrinterDisplay() to make libXt happy... */
