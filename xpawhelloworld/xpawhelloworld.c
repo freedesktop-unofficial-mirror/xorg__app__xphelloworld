@@ -6,8 +6,7 @@
  *                  Athena PrintShell widget class
  *
  * 
-
-Copyright 2003-2004 Roland Mainz <roland.mainz@nrubsig.org>
+Copyright 2003 Roland Mainz <roland.mainz@informatik.med.uni-giessen.de>
 
 All Rights Reserved.
 
@@ -40,7 +39,6 @@ in this Software without prior written authorization from The Open Group.
 #include <X11/StringDefs.h>
 #include <Xm/Xm.h> 
 #include <Xm/Text.h>
-#include <X11/Xaw/XawInit.h>
 #include <X11/Xaw/Print.h>
 #include <X11/XprintUtil/xprintutil.h>
 
@@ -52,7 +50,6 @@ in this Software without prior written authorization from The Open Group.
 
 #define Error(x) { printf x ; exit(EXIT_FAILURE); }
 #define Log(x) { if(verbose) printf x; }
-#define Msg(x) { if(!quiet)  printf x; }
 
 /* Prototypes */
 static int do_hello_world( int argc, char *argv[], const char *printername,
@@ -61,7 +58,6 @@ static int do_hello_world( int argc, char *argv[], const char *printername,
 /* Global vars */
 const char *ProgramName;                /* program name (from argv[0]) */
 Bool        verbose            = False; /* verbose output what the program is doing */
-Bool        quiet              = False; /* be quiet (no output except errors) */
 Bool        doPrint            = False; /* Do we print on a printer ? */
 Display    *pdpy               = NULL;  /* (Paper) display */
 Screen     *pscreen            = NULL;  /* (Paper) screen (DDX-specific!) */
@@ -77,35 +73,8 @@ void usage( void )
     fprintf(stderr, "-printer printernname\tprinter to use\n");
     fprintf(stderr, "-printfile file\tprint to file instead of printer\n");
     fprintf(stderr, "-v\tverbose output\n");
-    fprintf(stderr, "-q\tbe quiet (no output except errors)\n");
     fprintf(stderr, "\n");
     exit(EXIT_FAILURE);
-}
-
-static
-void PrintSpoolerCommandResults( Display *pdpy, XPContext pcontext )
-{
-    char *scr;
-
-    scr = XpGetOneAttribute(pdpy, pcontext, XPJobAttr, "xp-spooler-command-results");
-    if( scr )
-    {
-      if( strlen(scr) > 0 )
-      {
-        const char *msg = XpuCompoundTextToXmb(pdpy, scr);
-        if( msg )
-        {
-          Msg(("Spooler command returned '%s'.\n", msg));
-          XpuFreeXmbString(msg);
-        }
-        else
-        {
-          Msg(("Spooler command returned '%s' (unconverted).\n", scr));
-        }
-      }
-
-      XFree((void *)scr);
-    }
 }
 
 int main( int argc, char *argv[] )
@@ -151,12 +120,6 @@ int main( int argc, char *argv[] )
       else if (!strncmp("-v", arg, len))
       {
         verbose = True;
-        quiet   = False;
-      }
-      else if (!strncmp("-q", arg, len))
-      {
-        verbose = False;
-        quiet   = True;
       }
       else
       {
@@ -281,8 +244,7 @@ int do_hello_world( int argc, char *argv[], const char *printername, const char 
                          shell,                                                 
                          print_shell,                                           
                          hello;                                                 
-    long                 dpi_x = 0L,
-                         dpi_y = 0L;                                                 
+    long                 dpi;                                                   
     char                 fontname[256]; /* BUG: is this really big enougth ? */ 
     XFontStruct         *textFont;                                              
     XmFontList           textFontList;                                          
@@ -306,7 +268,7 @@ int do_hello_world( int argc, char *argv[], const char *printername, const char 
       XpSetContext(pdpy, pcontext);
 
       /* Get default printer resolution */   
-      if( XpuGetResolution(pdpy, pcontext, &dpi_x, &dpi_y) != 1 )
+      if( XpuGetResolution(pdpy, pcontext, &dpi) != 1 )
       {
         fprintf(stderr, "No default resolution for printer '%s'\n", printername);
         XpuClosePrinterDisplay(pdpy, pcontext);
@@ -321,7 +283,7 @@ int do_hello_world( int argc, char *argv[], const char *printername, const char 
       if( !pdpy )
         Error(("XOpenDisplay failure.\n"));
 
-      dpi_x = dpi_y = 0L;
+      dpi = 0;
       
       pscreen = XDefaultScreenOfDisplay(pdpy);
     }  
@@ -338,10 +300,6 @@ int do_hello_world( int argc, char *argv[], const char *printername, const char 
     if( doPrint )
     {
       n = 0;
-      /* Override any geometry resource settings as XawPrintShell adjusts it's size
-       * to the current page siue when |XawPrintLAYOUTMODE_DRAWABLEAREA| or
-       * |XawPrintLAYOUTMODE_PAGESIZE| are used. */
-      XtSetArg(args[n], XtNgeometry,    "+0+0");                          n++;
       XtSetArg(args[n], XawNlayoutMode, XawPrintLAYOUTMODE_DRAWABLEAREA); n++;
       print_shell = XtCreatePopupShell("myprintshell", 
                                        xawPrintShellWidgetClass, 
@@ -357,11 +315,11 @@ int do_hello_world( int argc, char *argv[], const char *printername, const char 
       shell = toplevel;
     }
 
-    sprintf(fontname, "-adobe-courier-medium-r-normal--40-*-%ld-%ld-*-*-iso8859-1", dpi_x, dpi_y);
+    sprintf(fontname, "-adobe-courier-medium-r-normal--40-*-%ld-%ld-*-*-iso8859-1", dpi, dpi);
     textFont = XLoadQueryFont(pdpy, fontname);
     if( !textFont )
     {          
-      sprintf(fontname, "-*-*-*-*-*-*-*-160-%ld-%ld-*-*-iso8859-1", dpi_x, dpi_y);
+      sprintf(fontname, "-*-*-*-*-*-*-*-160-%ld-%ld-*-*-iso8859-1", dpi, dpi);
       textFont = XLoadQueryFont(pdpy, fontname);
     }
     if( !textFont )
@@ -453,9 +411,7 @@ int do_hello_world( int argc, char *argv[], const char *printername, const char 
           fprintf(stderr, "%s: Error while printing to file.\n", ProgramName);
         }
       }
-
-      PrintSpoolerCommandResults(pdpy, pcontext);    
-
+    
       /* We have to use XpDestroyContext() and XtCloseDisplay() instead
        * of XpuClosePrinterDisplay() to make libXt happy... */
       if( pcontext != None )
