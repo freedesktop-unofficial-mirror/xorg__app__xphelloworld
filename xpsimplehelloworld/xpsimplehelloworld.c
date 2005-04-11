@@ -38,9 +38,11 @@ in this Software without prior written authorization from The Open Group.
 #define NULLSTR(x) (((x)!=NULL)?(x):(""))
 
 #define Log(x) { if(verbose) printf x; }
+#define Msg(x) { if(!quiet)  printf x; }
 
 static const char *ProgramName;      /* program name (from argv[0]) */
 static Bool        verbose = False;  /* verbose output what the program is doing */
+Bool        quiet   = False;  /* be quiet (no output except errors) */
 
 static 
 void usage(void)
@@ -51,6 +53,7 @@ void usage(void)
     fprintf (stderr, "-embedpsl2data string\tPostScript level 2 fragment to embed\n"
                      "\t\t(use 'xppsembeddemo1' to embed demo data)\n");
     fprintf (stderr, "-v\tverbose output\n");
+    fprintf (stderr, "-q\tbe quiet (no output except errors)\n");
     fprintf (stderr, "\n");
     exit(EXIT_FAILURE);
 }
@@ -93,12 +96,12 @@ int do_hello_world(const char *printername, const char *printerfile, const char 
     int            pscreennumber;
     Window         pwin;
     XGCValues      gcvalues;
-    XEvent         ev;
     GC             pgc;
     unsigned short dummy;
     XRectangle     winrect;
     char           fontname[256]; /* BUG: is this really big enougth ? */
     XFontStruct   *font;
+    char          *scr;
 
     if( XpuGetPrinter(printername, &pdpy, &pcontext) != 1 )
     {
@@ -305,6 +308,27 @@ int do_hello_world(const char *printername, const char *printerfile, const char 
         return(EXIT_FAILURE);
       }
     }
+
+    /* End of spooled job - get spooler command results and print them */
+    scr = XpGetOneAttribute(pdpy, pcontext, XPJobAttr, "xp-spooler-command-results");
+    if( scr )
+    {
+      if( strlen(scr) > 0 )
+      {
+        const char *msg = XpuCompoundTextToXmb(pdpy, scr);
+        if( msg )
+        {
+          Msg(("Spooler command returned '%s'.\n", msg));
+          XpuFreeXmbString(msg);
+        }
+        else
+        {
+          Msg(("Spooler command returned '%s' (unconverted).\n", scr));
+        }
+      }
+
+      XFree((void *)scr);
+    }
     
     XpuClosePrinterDisplay(pdpy, pcontext);
     return(EXIT_SUCCESS);
@@ -348,6 +372,12 @@ int main (int argc, char *argv[])
       else if (!strncmp("-v", arg, len))
       {
         verbose = True;
+        quiet   = False;
+      }
+      else if (!strncmp("-q", arg, len))
+      {
+        verbose = False;
+        quiet   = True;
       }
       else
       {

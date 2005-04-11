@@ -52,6 +52,7 @@ in this Software without prior written authorization from The Open Group.
 
 #define Error(x) { printf x ; exit(EXIT_FAILURE); }
 #define Log(x) { if(verbose) printf x; }
+#define Msg(x) { if(!quiet)  printf x; }
 
 /* Prototypes */
 static int do_hello_world( int argc, char *argv[], const char *printername,
@@ -60,6 +61,7 @@ static int do_hello_world( int argc, char *argv[], const char *printername,
 /* Global vars */
 const char *ProgramName;                /* program name (from argv[0]) */
 Bool        verbose            = False; /* verbose output what the program is doing */
+Bool        quiet              = False; /* be quiet (no output except errors) */
 Bool        doPrint            = False; /* Do we print on a printer ? */
 Display    *pdpy               = NULL;  /* (Paper) display */
 Screen     *pscreen            = NULL;  /* (Paper) screen (DDX-specific!) */
@@ -75,8 +77,35 @@ void usage( void )
     fprintf(stderr, "-printer printernname\tprinter to use\n");
     fprintf(stderr, "-printfile file\tprint to file instead of printer\n");
     fprintf(stderr, "-v\tverbose output\n");
+    fprintf(stderr, "-q\tbe quiet (no output except errors)\n");
     fprintf(stderr, "\n");
     exit(EXIT_FAILURE);
+}
+
+static
+void PrintSpoolerCommandResults( Display *pdpy, XPContext pcontext )
+{
+    char *scr;
+
+    scr = XpGetOneAttribute(pdpy, pcontext, XPJobAttr, "xp-spooler-command-results");
+    if( scr )
+    {
+      if( strlen(scr) > 0 )
+      {
+        const char *msg = XpuCompoundTextToXmb(pdpy, scr);
+        if( msg )
+        {
+          Msg(("Spooler command returned '%s'.\n", msg));
+          XpuFreeXmbString(msg);
+        }
+        else
+        {
+          Msg(("Spooler command returned '%s' (unconverted).\n", scr));
+        }
+      }
+
+      XFree((void *)scr);
+    }
 }
 
 int main( int argc, char *argv[] )
@@ -122,6 +151,12 @@ int main( int argc, char *argv[] )
       else if (!strncmp("-v", arg, len))
       {
         verbose = True;
+        quiet   = False;
+      }
+      else if (!strncmp("-q", arg, len))
+      {
+        verbose = False;
+        quiet   = True;
       }
       else
       {
@@ -418,7 +453,9 @@ int do_hello_world( int argc, char *argv[], const char *printername, const char 
           fprintf(stderr, "%s: Error while printing to file.\n", ProgramName);
         }
       }
-    
+
+      PrintSpoolerCommandResults(pdpy, pcontext);    
+
       /* We have to use XpDestroyContext() and XtCloseDisplay() instead
        * of XpuClosePrinterDisplay() to make libXt happy... */
       if( pcontext != None )
