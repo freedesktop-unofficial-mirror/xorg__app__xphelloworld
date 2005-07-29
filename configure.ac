@@ -22,7 +22,7 @@ dnl
 dnl Process this file with autoconf to create configure.
 
 AC_PREREQ([2.57])
-AC_INIT(xphelloworld,[7.0], [xorg@freedesktop.org],xphelloworld)
+AC_INIT(xphelloworld,[0.99.0], [https://bugs.freedesktop.org/enter_bug.cgi?product=xorg],xphelloworld)
 AM_INIT_AUTOMAKE([dist-bzip2])
 AM_MAINTAINER_MODE
 
@@ -106,6 +106,8 @@ fi
 #
 
 PKG_CHECK_MODULES(XPXTHELLOWORLD, xaw8 xprintutil xt)
+
+XORG_RELEASE_VERSION
 
 AC_OUTPUT([
 	Makefile
