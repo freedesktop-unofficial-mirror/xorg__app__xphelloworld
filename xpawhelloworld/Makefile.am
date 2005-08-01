@@ -27,5 +27,5 @@ xpawhelloworld_LDADD = $(XPAWHELLOWORLD_LIBS)
 xpawhelloworld_SOURCES =	\
         xpawhelloworld.c
 
-dist_man_MANS = \
+dist_man1_MANS = \
         xpawhelloworld.man

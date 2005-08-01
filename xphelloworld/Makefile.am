@@ -27,6 +27,6 @@ xphelloworld_LDADD = $(XPHELLOWORLD_LIBS)
 xphelloworld_SOURCES =	\
         xphelloworld.c
 
-dist_man_MANS = \
+dist_man1_MANS = \
         xphelloworld.man
 
