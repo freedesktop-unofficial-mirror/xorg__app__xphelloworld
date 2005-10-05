@@ -30,3 +30,4 @@ xpsimplehelloworld_SOURCES =	\
 dist_man1_MANS = \
         xpsimplehelloworld.man
 
+EXTRA_DIST = xpsimplehelloworld.sgml

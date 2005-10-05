@@ -30,3 +30,4 @@ xpxmhelloworld_SOURCES =	\
 dist_man1_MANS = \
         xpxmhelloworld.man
 
+EXTRA_DIST = xpxmhelloworld.sgml

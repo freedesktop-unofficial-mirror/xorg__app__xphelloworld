@@ -30,3 +30,4 @@ xphelloworld_SOURCES =	\
 dist_man1_MANS = \
         xphelloworld.man
 
+EXTRA_DIST = xphelloworld.sgml
