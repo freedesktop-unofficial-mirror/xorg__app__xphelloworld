@@ -83,7 +83,7 @@ AC_SUBST(XPAWHELLOWORLD_LIBS)
 # xphelloworld
 #
 
-PKG_CHECK_MODULES(XPHELLOWORLD, xprintapputil xprintutil)
+PKG_CHECK_MODULES(XPHELLOWORLD, xprintapputil xprintutil xp)
 
 #
 # xpsimplehelloworld
