@@ -71,7 +71,7 @@ AM_CONDITIONAL([BUILD_MOTIFAPPS], test "$build_motifapps" = yes)
 # xpawhelloworld
 #
 if test x$build_motifapps = xyes ; then
-   PKG_CHECK_MODULES(XPAWHELLOWORLD, xaw8 xprintutil)
+   PKG_CHECK_MODULES(XPAWHELLOWORLD, xaw8 xprintutil xp)
    XPAWHELLOWORLD_CFLAGS="$XPAWHELLOWORLD_CFLAGS $MOTIF_CFLAGS"
    XPAWHELLOWORLD_LIBS="$XPAWHELLOWORLD_LIBS $MOTIF_LIBS"
 fi
@@ -89,14 +89,14 @@ PKG_CHECK_MODULES(XPHELLOWORLD, xprintapputil xprintutil xp)
 # xpsimplehelloworld
 #
 
-PKG_CHECK_MODULES(XPSIMPLEHELLOWORLD, xprintutil)
+PKG_CHECK_MODULES(XPSIMPLEHELLOWORLD, xprintutil xp)
 
 #
 # xpxmhellowolrd
 #
 
 if test x$build_motifapps = xyes ; then
-   PKG_CHECK_MODULES(XPXMHELLOWORLD, xprintutil xt)
+   PKG_CHECK_MODULES(XPXMHELLOWORLD, xprintutil xt xp)
    XPXMHELLOWORLD_CFLAGS="$XPXMHELLOWORLD_CFLAGS $MOTIF_CFLAGS"
    XPXMHELLOWORLD_LIBS="$XPXMHELLOWORLD_LIBS $MOTIF_LIBS"
 fi
@@ -105,7 +105,7 @@ fi
 # xpxthelloworld
 #
 
-PKG_CHECK_MODULES(XPXTHELLOWORLD, xaw8 xprintutil xt)
+PKG_CHECK_MODULES(XPXTHELLOWORLD, xaw8 xprintutil xt xp)
 
 XORG_RELEASE_VERSION
 
