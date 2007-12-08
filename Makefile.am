@@ -27,7 +27,7 @@ endif
 
 SUBDIRS = $(MOTIFAPPS) xphelloworld xpsimplehelloworld xpxthelloworld
 
-EXTRA_DIST += ChangeLog
+EXTRA_DIST = ChangeLog
 MAINTAINERCLEANFILES = ChangeLog
 
 .PHONY: ChangeLog
