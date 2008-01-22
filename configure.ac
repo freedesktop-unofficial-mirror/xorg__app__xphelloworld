@@ -54,14 +54,17 @@ if test x$build_motifapps = xyes ; then
    if [[ ! -z $motif_includes ]] ; then
       MOTIF_CFLAGS=-I$motif_includes
    fi
+   AC_CHECK_HEADER([Xm/Print.h], [], [build_motifapps=no])
+fi
 
+if test x$build_motifapps = xyes ; then
    if [[ ! -z $motif_libs ]] ; then
       MOTIF_LIBS="-L$motif_libs -lXm"
    else
       MOTIF_LIBS="-lXm"
    fi
 else
-   echo motif library not found
+   echo Xprint-aware Motif library not found
 fi
 
 echo build: Build Motif Applications: $build_motifapps
