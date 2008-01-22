@@ -37,7 +37,7 @@ build_motifapps=yes
 
 AC_ARG_WITH(motif-libraries, [Directory containing the Motif libraries], 
 			     motif_libs=$withval)
-AC_ARG_WITH(motif-includes, [Directory containing the Xm direcotry with the Motif header files (eg. /usr/X11R6/include)],
+AC_ARG_WITH(motif-includes, [Directory containing the Xm directory with the Motif header files (eg. /usr/X11R6/include)],
 			    motif_includes=$withval)
 
 if test x$with_motif_libraries = xno; then
@@ -45,11 +45,9 @@ if test x$with_motif_libraries = xno; then
    build_motifapps=no
 fi
 
+PKG_CHECK_MODULES(X11, x11)
 if [[ -z $motif_libs ]] ; then
-   PKG_CHECK_MODULES(X11, x11)
-   AC_CHECK_LIB(Xm, XmFontListCreate, build_motifapps=no, [$X11])
-   echo motif library not found
-   build_motifapps=no
+   AC_CHECK_LIB(Xm, XmFontListCreate, [], build_motifapps=no, [$X11_LIBS])
 fi
 
 if test x$build_motifapps = xyes ; then
@@ -62,6 +60,8 @@ if test x$build_motifapps = xyes ; then
    else
       MOTIF_LIBS="-lXm"
    fi
+else
+   echo motif library not found
 fi
 
 echo build: Build Motif Applications: $build_motifapps
